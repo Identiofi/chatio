@@ -41,14 +41,15 @@ You can call the server using curl:
 `$ curl -X POST -H "Content-Type: application/json" -d '{"message": "Hello World"}' http://localhost:8080`
 
 
-#### Your task
-
+---
+Your task
+---
 Your task is to create a new enpoint that will return a list of active users in the chat.
 The list of users can be stored in a global variable for now, and you can use the following
 struct to represent a user:
 
 ```go
-type User struct {
+type user struct {
     Name string
     ID   string
 }
@@ -76,13 +77,15 @@ You can test your endpoint by running the following command:
 `$ curl -X GET http://localhost:8080/users`
 
 ---
+Register
+---
 
 Your second task is to create a new endpoint that will allow a user to register to the chat.
 The endpoint should be available at `/register` and should accept a request in the following format:
 
 ```json
 {
-    "name": "John Doe"
+    "name": "Mike Smith"
 }
 ```
 
@@ -95,10 +98,13 @@ The endpoint should then return a response in the following format:
 }
 ```
 
+Hint: You can use `rand.Intn()` to generate a random number.
+
 Test your endpoint once again with curl, this time figure it out yourself.
 
 ---
-
+Unregister
+---
 Your third task is to create a new endpoint that will allow a user to unregister from the chat.
 The endpoint should be available at `/unregister` and should accept a request in the following format:
 
@@ -115,11 +121,22 @@ The endpoint should then remove the user from the list of active users, and retu
     "message": "User unregistered"
 }
 ```
+if the user was successfully removed, or
+
+```json
+{
+    "message": "User not found"
+}
+```
+if the user was not found.
 
 Test your endpoint once again with curl, you know how it's done by now.
 
+---
+Solution
+---
 
-Alright, you're done with part 1 of the workshop. If you want to see the solution, you can checkout the `part-1-solution` branch.
+Alright good job! You're done with part 1 of the workshop. If you want to see the solution, you can checkout the `part-1-solution` branch.
 
 `$ git checkout part-1-solution`
 
