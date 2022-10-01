@@ -41,15 +41,24 @@ You can call the server using curl:
 `$ curl -X POST -H "Content-Type: application/json" -d '{"message": "Hello World"}' http://localhost:8080`
 
 
+<<<<<<< HEAD
 ---
 Your task
 ---
+=======
+#### Your task
+
+>>>>>>> caa2e3e (part-1: server)
 Your task is to create a new enpoint that will return a list of active users in the chat.
 The list of users can be stored in a global variable for now, and you can use the following
 struct to represent a user:
 
 ```go
+<<<<<<< HEAD
 type user struct {
+=======
+type User struct {
+>>>>>>> caa2e3e (part-1: server)
     Name string
     ID   string
 }
@@ -72,20 +81,31 @@ The endpoint should be available at `/users` and should return a list of users i
 }
 ```
 
+<<<<<<< HEAD
 **You can test your endpoint by running the following command:**
+=======
+You can test your endpoint by running the following command:
+>>>>>>> caa2e3e (part-1: server)
 
 `$ curl -X GET http://localhost:8080/users`
 
 ---
+<<<<<<< HEAD
 Register
 ---
+=======
+>>>>>>> caa2e3e (part-1: server)
 
 Your second task is to create a new endpoint that will allow a user to register to the chat.
 The endpoint should be available at `/register` and should accept a request in the following format:
 
 ```json
 {
+<<<<<<< HEAD
     "name": "Mike Smith"
+=======
+    "name": "John Doe"
+>>>>>>> caa2e3e (part-1: server)
 }
 ```
 
@@ -98,6 +118,7 @@ The endpoint should then return a response in the following format:
 }
 ```
 
+<<<<<<< HEAD
 Hint: You can use `rand.Intn()` to generate a random number. You'll have to convert your number to a string, using `strconv.Itoa()`
 
 **Test your endpoint once again with curl, this time figure it out yourself.**
@@ -105,6 +126,12 @@ Hint: You can use `rand.Intn()` to generate a random number. You'll have to conv
 ---
 Unregister
 ---
+=======
+Test your endpoint once again with curl, this time figure it out yourself.
+
+---
+
+>>>>>>> caa2e3e (part-1: server)
 Your third task is to create a new endpoint that will allow a user to unregister from the chat.
 The endpoint should be available at `/unregister` and should accept a request in the following format:
 

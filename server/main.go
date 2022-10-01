@@ -39,6 +39,12 @@ func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(message{Message: "Hello World!"})
 }
 
+<<<<<<< HEAD
 // TODO: type user struct
 
 // var userList = []user{}
+=======
+// TODO: type user
+
+// var userList []users
+>>>>>>> caa2e3e (part-1: server)
