@@ -16,6 +16,14 @@ To get started, clone this repository
 $ git clone github.com/identiofi/chatio
 ```
 
+## Prerequisits
+
+1. Install go
+2. Check that your install works
+
+If running Visual Studio Code, install the Go plugin  
+[go plugin for VSCode](https://marketplace.visualstudio.com/items?itemName=golang.go)
+
 ---
 ## Part 1
 ```
@@ -23,8 +31,8 @@ $ git checkout part-1
 ```
 
 #### Introduction
-In part 1 of this workshop, we will be creating a simple server that will listen for incoming
-connections and print out the messages that are sent to it.
+In part 1 of this workshop, we will be creating a simple REST API that will be used to create and list users.  
+This is a very simple API, and the same base will be used in the next part of the workshop.
 
 The server will be listening on port 8080, and will be expecting a message in the following format:
 
@@ -44,7 +52,10 @@ The server will then print out the message to the console, and respond with the 
 
 This part is already implemented, and you can run the server by running the following command:
 
-`$ make run-server` or `$ cd server && go run main.go`
+```
+$ cd server/
+$ go run main.go
+```
 
 You can call the server using curl:
 
@@ -54,14 +65,13 @@ You can call the server using curl:
 ---
 Your task
 ---
-Your task is to create a new enpoint that will return a list of active users in the chat.
-The list of users can be stored in a global variable for now, and you can use the following
-struct to represent a user:
+Your task is to create a new enpoint that will return a list of registered users.
+As of now, define a global variable `userList` ([see row 49](server/main.go)) that will hold a list of users.
 
 ```go
-type user struct {
-    Name string
-    ID   string
+type User struct {
+    Name string `json:"name"`
+    ID   int    `json:"id"`
 }
 ```
 
@@ -72,15 +82,20 @@ The endpoint should be available at `/users` and should return a list of users i
     "users": [
         {
             "name": "John Doe",
-            "id": "1234"
+            "id": 1234
         },
         {
             "name": "Jane Doe",
-            "id": "5678"
+            "id": 5678
         }
     ]
 }
 ```
+
+
+// To summarize, you should create a new handler for the endpoint `/users` that will return a list of users,  
+The list of users is stored in a global variable `userList` that is defined in the main method.
+
 
 You can test your endpoint by running the following command:
 
@@ -90,7 +105,7 @@ You can test your endpoint by running the following command:
 Register
 ---
 
-Your second task is to create a new endpoint that will allow a user to register to the chat.
+Your second task is to create a new endpoint that will allow a user to register.  
 The endpoint should be available at `/register` and should accept a request in the following format:
 
 ```json
@@ -99,18 +114,30 @@ The endpoint should be available at `/register` and should accept a request in t
 }
 ```
 
-The endpoint should then generate a unique ID for the user, and add the user to the list of active users.
+> Hint: look att the helloWorldhandler, which exepcts a format of `{ "message": "Hello world" }`
+
+To easily decode the incoming message into the right type, use the `User` type defined in the previous task.  
+(encoding and decoding json in go is very easy, and does not require all fields to be present in the message)
+
+
+The handler should then generate a unique ID for the user, and add the user to the list of active users.
+
 The endpoint should then return a response in the following format:
 
 ```json
 {
-    "id": "1234"
+    "id": 1234
 }
 ```
 
-Hint: You can use `rand.Intn()` to generate a random number.
+> Hint: look at the CHEATSHEET for help with generating a unique ID and the `append` function for adding a user to the list of users.  
+> CHEATSheet also contains information about how to return a response in the correct format.
 
-Test your endpoint once again with curl, this time figure it out yourself.
+Test your endpoint once again with curl
+    
+    `$ curl -X POST -H "Content-Type: application/json" -d '{"name": "Mike Smith"}' http://localhost:8080/register`
+
+Feel free to test your endpoint with multiple users, and see if the list of users is updated correctly.
 
 ---
 Unregister
@@ -120,7 +147,7 @@ The endpoint should be available at `/unregister` and should accept a request in
 
 ```json
 {
-    "id": "1234"
+    "id": 1234
 }
 ```
 
@@ -140,29 +167,44 @@ if the user was successfully removed, or
 ```
 if the user was not found.
 
-Test your endpoint once again with curl, you know how it's done by now.
+you will have to loop over your `userList` and find a user with the given ID. 
+If there is no user with the given ID, return the error, else remove the user from the list.
+
+
+Test your endpoint once again with curl,
+
+`$ curl -X POST -H "Content-Type: application/json" -d '{"id": 1234}' http://localhost:8080/unregister`
 
 ---
 Chat
 ---
-Your fourth and final task is to create a new endpoint that will allow a user to send a message to the chat. The endpoint should be available at `/chat` and should receive the user ID as a query parameter, like so: `/chat?id=1234`
+Your fourth and final task is to create a new endpoint that will allow a user to send a message to the chat. The endpoint should be available at `/chat` and should receive the user ID as a query parameter, like this: `/chat?id=1234`
 
-The endpoint will connect the user to the chat, and will then listen for incoming messages from the user. The endpoint is a websocket endpoint. 
+You can do this task in multiple steps, as it will be a bit more complex than the previous tasks.
 
-We will cheat a little bit here, and use our already implemented server to handle the websocket connection. Fetch the server from the `part-1-solution` branch, and run it with the following command:  
+1. Create a new endpoint `/chat` and define a handler for the endpoint.
+2. The handler should accept a query parameter `id` that will contain the ID of the user sending the message.
+   1. Have a look at the CHEATSHEET for help with parsing query parameters.
+   2. Print the ID to the console to make sure that the ID is received correctly. (you can use the `fmt.Println` function for this)
+3. Find the given user in the list of users, and print the user to the console to make sure that the user is found correctly.
+4. Connect the user to the chat. (see the next section for more information)
 
-`git checkout part-1-solution -- server.go`  
-> _Note: you'll need to be in the server directory for this to work_
+---
+We will cheat a little bit here, and use our already implemented server to handle the websocket connection. Fetch the server from the `part-1-solution` branch, you can get it with the following command:  
+
+`git checkout origin/part-1-solution -- server/server.go`  
+> _Note: you'll need to be in the project root directory for this to work_
 
 
 Yuo should now have a new file called `server.go` in your server directory. Your task is to initialize
 the chat server in the `main.go` file, and then connect to it from the `/chat` endpoint.
 
-let's look at the `main.go` file:
+let's look at the `main.go` file below:
 
 ```go
+// This is your main file (inside main.go) that you have worked on.
 func main() {
-    
+    // create a new chat, c
     c := newChat()
     // notice the go keyword here, this is because we want to run the chat server 
     // in a separate goroutine. go routines are a way to run functions concurrently, 
@@ -172,7 +214,7 @@ func main() {
     // .. your previous handlers
 
     //The new handler requires the chat struct as an argument, so we'll pass it in like this
-    http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+    http.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
         // .. your code goes here
     })
 
@@ -180,16 +222,15 @@ func main() {
 }
 ```
 
-The chat struct has a `connectUser(usr user,  w http.ResponseWriter, r *http.Request)` method that you can use to connect a user to the chat. The method takes a user struct, a `http.ResponseWriter` and a `http.Request` as arguments.
+Note that we are initializing the handler for the `/chat` endpoint inside the `main` function. This is done because we need to pass the chat struct as an argument to the handler. Feel free to move your handler you just wrote to the `main` function.
+
+The chat struct has a `connectUser(User, http.ResponseWriter, *http.Request)` method that you can use to connect a user to the chat.
+
+//  To summarize, your task is to create a new handler for the `/chat` endpoint, and then connect the user to the chat using the `connectUser` method located in `server.go`. Before connecting to the chat, get the user from the `id` query parameter, check that the user exists in the list of active users.
 
 
-furthermore, the connectUser method requires the request to be of type `http.MethodGet`, so you'll need to add a check for that in your handler. As the handler is not of type `http.MethodPost`, you cannot
-send a request body to the endpoint. Instead, you'll have to send the user ID as a query parameter, like so: `/chat?id=1234`
-
-to get the query parameters from the request, you can use the `r.URL.Query()` method, which returns a `map[string][]string`. You can then get the value of the `id` parameter by using the `Get` method on the map, like so: `r.URL.Query().Get("id")`
-
-//  
-To summarize, your task is to create a new handler for the `/chat` endpoint, and then connect the user to the chat using the `connectUser` method located in `server.go`. Before connecting the user, you'll have to check that the request method is `http.MethodGet`, and that the `id` query parameter is set, and that the user exists in the list of active users.
+> Note: When running the server, you'll have to specify all the files that you want to run, like so:  
+> `$ go run main.go server.go` or as a short hand (all files) `$ go run .`
 
 
 Once everything is done, you should be able to connect to the chat endpoint using curl, like so:
@@ -197,10 +238,6 @@ Once everything is done, you should be able to connect to the chat endpoint usin
 ```$ curl -i --no-buffer -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" -H "Sec-WebSocket-Version: 13" http://localhost:8080/chat?id=1```
 
 Curl will then wait for incoming messages from the server, you will not be able to send any messages using curl.. Let's fix that! Onto the client! 🚀
-
-
-> Note: When running the server, you'll have to specify all the files that you want to run, like so:  
-> `$ go run main.go server.go` or as a short hand (all files) `$ go run .`
 
 ---
 Solution
@@ -219,7 +256,7 @@ For this part, we'll be using the `github.com/gorilla/websocket` package, which 
 
 We also need a working chat server, if you did not complete part 1, you can checkout a working solution from the `part-1-solution` branch.
 
-`$ git checkout part-1-solution -- server/main.go server/server.go`
+`$ git checkout origin/part-1-solution -- server/main.go server/server.go`
 
 > Note: you'll need to be in the root directory for this to work. If you want to save your changes please commit them first.
 > You can also stash your changes, if you do not wish to commit them. With: `$ git stash`
