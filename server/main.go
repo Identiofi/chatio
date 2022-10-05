@@ -46,6 +46,6 @@ func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 // userList is a variable that stores all users of type user
 // as it's outside of the function scope, it's accessible to all functions (global)
 // Uncomment the line below to use it
-// var userList = []user{{ Name: "John Doe", ID: "1234" }, { Name: "Jane Doe", ID: "5678" }}
+// var userList = []User{{ Name: "John Doe", ID: 1234 }, { Name: "Jane Doe", ID: 5678 }}
 
 // TODO: implement usersHandler
