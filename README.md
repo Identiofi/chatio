@@ -65,7 +65,7 @@ You can call the server using curl:
 ---
 Your task
 ---
-Your task is to create a new enpoint that will return a list of registered users.
+Your task is to create a new endpoint that will return a list of registered users.
 As of now, define a global variable `userList` ([see row 49](server/main.go)) that will hold a list of users.
 
 ```go
