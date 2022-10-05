@@ -4,6 +4,8 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -11,19 +13,17 @@ import (
 )
 
 //go:embed static
-var staticFiles embed.FS
+var embeddedFiles embed.FS
 
 func main() {
 	chat := newChat()
 	go chat.run()
 
-	staticFS := http.FS(staticFiles)
-	fs := http.FileServer(staticFS)
-
-	// Serve static files
-	http.Handle("/static/", fs)
-
-	http.HandleFunc("/", pageHandler)
+	fsys, err := fs.Sub(embeddedFiles, "static")
+	if err != nil {
+		log.Fatal(err)
+	}
+	http.Handle("/", http.FileServer(http.FS(fsys)))
 	http.HandleFunc("/users", usersHandler)
 	http.HandleFunc("/register", registerUserHandler)
 	http.HandleFunc("/unregister", unregisterUserHandler)
@@ -32,17 +32,19 @@ func main() {
 	})
 
 	log.Printf("Starting server on port 8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe("localhost:8080", nil); err != nil {
 		log.Fatal("Server error:", err)
 	}
 }
 
-type Message struct {
-	Message string `json:"message"`
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(readFile("./static/index.html")))
 }
 
-func pageHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "index.html")
+type message struct {
+	Message string `json:"message"`
 }
 
 type User struct {
@@ -106,21 +108,26 @@ func unregisterUserHandler(w http.ResponseWriter, r *http.Request) {
 func serveWebsocket(chat *Chat, w http.ResponseWriter, r *http.Request) {
 	in := r.URL.Query().Get("id")
 
-	var id int
 	id, err := strconv.Atoi(in)
 	if err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
+		log.Fatalf("could not convert id to int: %v", err)
 	}
 
 	// check if user is registered
 	for _, u := range userList {
 		if u.ID == id {
-			log.Printf("Connecting user %s ...", u.Name)
 			chat.connectUser(u, w, r)
 			return
 		}
 	}
 
 	http.Error(w, `{ "message": "user not found"}`, http.StatusNotFound)
+}
+
+func readFile(path string) []byte {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return content
 }
