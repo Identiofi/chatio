@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,11 +10,20 @@ import (
 	"strconv"
 )
 
+//go:embed static
+var staticFiles embed.FS
+
 func main() {
 	chat := newChat()
 	go chat.run()
 
-	http.HandleFunc("/", helloWorldHandler)
+	staticFS := http.FS(staticFiles)
+	fs := http.FileServer(staticFS)
+
+	// Serve static files
+	http.Handle("/static/", fs)
+
+	http.HandleFunc("/", pageHandler)
 	http.HandleFunc("/users", usersHandler)
 	http.HandleFunc("/register", registerUserHandler)
 	http.HandleFunc("/unregister", unregisterUserHandler)
@@ -31,24 +41,8 @@ type Message struct {
 	Message string `json:"message"`
 }
 
-func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	// init new variable of type message
-	var msg Message
-	// decode the request body into the message variable,
-	// passing a pointer to the message variable
-	json.NewDecoder(r.Body).Decode(&msg)
-
-	if msg.Message != "Hello World" {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
-
-	// encode the message variable as JSON and write it to the response writer.
-	// Set the content type to application/json
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	// json.NewEncoder(w).Encode(Message{Message: "Hello received"})
-	fmt.Fprintf(w, `{"message": "Message received"}`)
+func pageHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "index.html")
 }
 
 type User struct {
@@ -64,7 +58,12 @@ var userList = []User{
 func usersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(userList)
+
+	noID := make([]User, len(userList))
+	for i, u := range userList {
+		noID[i] = User{Name: u.Name, ID: 0}
+	}
+	json.NewEncoder(w).Encode(noID)
 }
 
 func registerUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,6 +116,7 @@ func serveWebsocket(chat *Chat, w http.ResponseWriter, r *http.Request) {
 	// check if user is registered
 	for _, u := range userList {
 		if u.ID == id {
+			log.Printf("Connecting user %s ...", u.Name)
 			chat.connectUser(u, w, r)
 			return
 		}

@@ -152,11 +152,16 @@ func (c *Chat) connectUser(u User, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(w, r, nil)
-	if err != nil {
+	// connect to websocket
+	conn, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+	if _, ok := err.(websocket.HandshakeError); ok {
+		http.Error(w, "Not a websocket handshake", http.StatusBadRequest)
+		return
+	} else if err != nil {
 		log.Println(err)
 		return
 	}
+
 	client := &Client{name: u.Name, chat: c, conn: conn, send: make(chan []byte, 256)}
 	log.Printf("%s connected: %s", client.name, client.conn.RemoteAddr())
 	client.chat.register <- client
