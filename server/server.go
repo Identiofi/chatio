@@ -77,11 +77,6 @@ type Client struct {
 	send chan []byte
 }
 
-type Message struct {
-	Channel string
-	Payload []byte
-}
-
 func (c *Client) readPump() {
 	defer func() {
 		c.chat.unregister <- c
@@ -147,14 +142,14 @@ func (c *Client) writePump() {
 	}
 }
 
-func (c *Chat) connectUser(u user, w http.ResponseWriter, r *http.Request) {
+func (c *Chat) connectUser(u User, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	if u.Name == "" {
-		http.Error(w, fmt.Sprintf("Name is required, cannot find name of user with ID %s", u.ID), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Name is required, cannot find name of user with ID %d", u.ID), http.StatusBadRequest)
 		return
 	}
 
