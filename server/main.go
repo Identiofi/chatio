@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -16,13 +17,13 @@ func main() {
 	}
 }
 
-type message struct {
+type Message struct {
 	Message string `json:"message"`
 }
 
 func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	// init new variable of type message
-	var msg message
+	var msg Message
 	// decode the request body into the message variable,
 	// passing a pointer to the message variable
 	json.NewDecoder(r.Body).Decode(&msg)
@@ -36,7 +37,7 @@ func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(message{Message: "Hello World!"})
+	fmt.Fprintf(w, `{"message": "Message received"}`)
 }
 
 // TODO: type user struct
