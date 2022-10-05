@@ -28,18 +28,24 @@ func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	// passing a pointer to the message variable
 	json.NewDecoder(r.Body).Decode(&msg)
 
-	if msg.Message != "Hello world" {
+	// check if the message equals "hello World"
+	if msg.Message != "Hello World" {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	// encode the message variable as JSON and write it to the response writer.
-	// Set the content type to application/json
+	// return a response with the message "Message received"
+	// return the content type as JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Message received"}`)
+	fmt.Fprintf(w, `{ "message": "Message received"}`)
 }
 
-// TODO: type user struct
+// TODO - TASK 1: type user struct
 
-// var userList = []user{}
+// userList is a variable that stores all users of type user
+// as it's outside of the function scope, it's accessible to all functions (global)
+// Uncomment the line below to use it
+// var userList = []User{{ Name: "John Doe", ID: 1234 }, { Name: "Jane Doe", ID: 5678 }}
+
+// TODO: implement usersHandler
