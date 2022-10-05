@@ -270,51 +270,84 @@ Client
 ---
 
 Your first task is to create a new file called `main.go` in the `client` directory (you should have this file).
-In this file, you'll need to create a new struct called `client`, which will have the following fields:
+
+Once again, cd into the `client` directory, so that you can run the client from the same directory.
+
+`$ cd client`
+
+In this file, you'll need to create a new struct called `Client`, which will have the following fields:
 
 ```go
-type client struct {
+type Client struct {
     // the websocket connection
     conn *websocket.Conn
     // errChan is used to send errors to the main goroutine
-    // from the listen goroutine
+    // from other goroutine
     errChan chan error
 }
 ```
 
-You'll also need to create a new method for initializing the client `newClient`, which will take a `url` as an argument. The method should then connect to the chat server, and store the connection in the `conn` field. Your method should return a pointer to the newly created client.  
+```
+A goroutine is a lightweight thread managed by the Go runtime.
+```
+
+You'll also need to create a new method for initializing the client `newClient`, which should take a `url` as an argument, of type string. The method should then connect to the chat server, and store the connection in the `conn` field. Your method should return a pointer to the newly created client.  
 
 You will also have to `make()` the new `errChan` field.
 
 ```go
-func newClient(url string) (*client, error) {
-    // your code goes here
-    c := &client{
+func newClient(url string) (*Client, error) {
+    // your code goes here (initialize connection)
+    // handle errors
+
+    c := &Client{
         conn:    conn,
         errChan: make(chan error),
     }
+
+    fmt.Printf("Connected to server: %s\n", url)
     // your code goes here
+    // return client
 }
 ```
 
 ---
-Write
+Writer
 ---
 
-To send a message to the server, you can use the `WriteMessage` method on the `websocket.Conn` struct. 
-The method takes no arguments, so you'll have to use the `bufio` package to read input from the console. 
-You can then send the input to the server using the `WriteMessage` method.  
-Create a new `Scanner` using the `bufio.NewScanner` function, and then use the `Scan` method to read 
-input from the console. You can then get the input using the `Text` method on the `Scanner` struct.
+To send a message to the server, you can use the `WriteMessage` method on the `websocket.Conn` struct. The method takes no arguments, so you'll have to use the `bufio` package to read input from the console. Once again, let's do this in a few steps.
+
+First, look for the placeholder method `write` in the `client.go` file, and implement it.  
 
 ```go
 func (c *client) write() {
     // your code goes here
 }
 ```
-For the sake of debugging, you can use `fmt.Println` to print the input to the console, 
-to make sure that you're reading the input correctly. 
-> Hint: you can use `fmt.Fprintf(os.Stdout, ...)` to print to the console.
+
+1. The `write` method should read input from the console, and for now send it back to the console. You can use the `fmt.Println` function to print to the console.
+
+2. Next, you'll need to create a new goroutine that will run the `write` method. You can do this by calling the `go` keyword, like so: `go c.write()`.
+
+3. Finally, you'll need to call the `write` method from the `main` method, like so: `c.write()`.
+
+```go
+
+func main() {
+    // your code goes here
+
+    // call the write method
+    go c.write()
+
+    // your code goes here
+}
+```
+
+Test your code by running the client, and write a message in the console. You should see the message printed back to the console.
+
+4. Change the `write` method to send the message to the server, instead of printing it to the console. You can use the `WriteMessage` method on the `websocket.Conn` struct. The method takes no arguments, so you'll have to use the `bufio` package to read input from the console.
+
+> Hint: check the CHEATSHEET for how to read an input.
 
 At this poit you should be able to send messages to the server, and see them printed to the console.
 The server will also print a message to the console, which you can use to verify that your client is working correctly.
@@ -326,14 +359,23 @@ Your client should then listen for incoming messages from the server, and print 
 You can use the `ReadMessage` method on the `websocket.Conn` struct to read incoming messages. 
 `ReadMessage` returns a `messageType` and a `[]byte`, which you can then print to the console using `fmt.Println`.
 
-under the hood `string` is just a slice of bytes, so you can easily convert `[]byte` to a string using the `string` function.
-
+1. Create a new method listen (already defined)
 
 ```go
-func (c *client) listen() {
+func (c *Client) listen() {
     // your code goes here
 }
 ```
+
+2. Create an infinite loop, and call the `ReadMessage` method. Handle any error
+3. Write a switch statement on the type returned from the `ReadMessage` method
+   > Hint: Look for help in the CHEATSHEET
+4. define a default statment in the switch statement, which writes an error to the error channel
+   1. Return an error to the `errChan` field of the client, as this is an unknown message type
+5. Print the message to the console
+
+
+under the hood `string` is just a slice of bytes, so you can easily convert `[]byte` to a string using the `string` function.
 
 > Hint: you can use `fmt.Fprintf(os.Stdout, ...)` to print to the console.
 
@@ -341,8 +383,17 @@ func (c *client) listen() {
 Stiching it all together
 ---
 
-Go requires a `main` function, so you'll need to create one, which should create a new `client` struct, 
-and then start the write and listen goroutines.
+We should now have a way to read and write messages from the server. Let's put it all together.
+
+We have helped you by providing a `run` method, but feel free to do it your own way. 
+In the `main` method, do the following:
+1. Initialize the client (using the `newClient` method)
+2. Start the Writer in a new goroutine
+3. Start the Listener in a new goroutine
+4. if an error is written to the `errChan` field, print it to the console and exit the program
+    - write an infinite loop on the main gorouting that waits for an error to be written to the `errChan` field
+    - you can use the `os.Exit` function to exit the program
+    - handle if the user press ctrl + c to exit the program (hint: check Run method)
 
 ```go
 func main() {
@@ -350,9 +401,9 @@ func main() {
 }
 ```
 
-To help you we have created a `run` method, which will run the client, start new goroutines for the reader and writer,
-and handle any errors that might occur. We included a helper function called `fail` which will print an error message to the console,
-and a close method which will close the connection and exit the program.
+As the final task, you should gracefully close the connection if an error occures or the user interupts the program, for this you can use the `Close` method which we provided.
+
+Bonus: and handle any errors that might occur. We included a helper function called `fail` which will print an error message to the console,
 
 ```go
 // run starts the client
@@ -393,7 +444,7 @@ func fail(msg string, o ...interface{}) {
 ---
 ---
 
-To summarize, your task is to create a new struct called `client`, which will have a `conn` field 
+To summarize, your task is to create a new struct called `Client`, which will have a `conn` field 
 of type `*websocket.Conn`. You'll also need to create a new method 
 called `newClient`, which will take a `url` as an argument. 
 The method should then connect to the chat server, and store the connection in the `conn` field.

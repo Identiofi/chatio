@@ -176,3 +176,71 @@ func handler(w http.ResponseWriter, r *http.Request) {
     name := r.FormValue("name")
 }
 ```
+
+
+### Opening a websocket connection
+
+```go
+conn, err := websocket.DefaultDialer.Dial("ws://localhost:8080/chat", nil)
+if err != nil {
+    log.Fatal("dial:", err)
+}
+```
+
+### Reading from the console
+    
+```go
+// read line by line from the console
+scanner := bufio.NewScanner(os.Stdin)
+
+// buffer input until a new line is found
+for scanner.Scan() {
+    // get the text from the scanner
+    text := scanner.Text()
+    // do something with the text
+}
+
+```
+
+
+### Writing to the websocket connection
+
+```go
+// write a message to the websocket connection
+err := conn.WriteMessage(websocket.TextMessage, []byte("Hello World"))
+if err != nil {
+    log.Println("write:", err)
+    return
+}
+```
+
+### Reading from a websocket
+
+```go
+// t:     type of message
+// msg:   message (in []byte format)
+// error: error if any
+t, msg, err := conn.ReadMessage()
+if err != nil {
+    log.Println("read:", err)
+    return
+}
+text := string(msg)
+
+// print the message to stdout (standard output)
+fmt.Fprintf(os.Stdout, "%s\n", text)
+```
+
+### Switch statemnts
+
+```go
+// switch statements
+switch t {
+case websocket.TextMessage:
+    // do something
+case websocket.BinaryMessage:
+    // do something
+default:
+    // do something
+    // as we do not expect or handle this, this is a good place to return an error to our error channel
+}
