@@ -122,7 +122,6 @@ func (c *Client) writePump() {
 
 			w.Write([]byte(msg))
 
-			log.Printf("received message: %s", msg)
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
 			for i := 0; i < n; i++ {
