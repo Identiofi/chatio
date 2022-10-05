@@ -27,18 +27,18 @@ func main() {
 	}
 }
 
-type message struct {
+type Message struct {
 	Message string `json:"message"`
 }
 
 func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	// init new variable of type message
-	var msg message
+	var msg Message
 	// decode the request body into the message variable,
 	// passing a pointer to the message variable
 	json.NewDecoder(r.Body).Decode(&msg)
 
-	if msg.Message != "Hello world" {
+	if msg.Message != "Hello World" {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -47,17 +47,18 @@ func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(message{Message: "Hello World!"})
+	// json.NewEncoder(w).Encode(Message{Message: "Hello received"})
+	fmt.Fprintf(w, `{"message": "Message received"}`)
 }
 
-type user struct {
+type User struct {
 	Name string `json:"name"`
-	ID   string `json:"id"`
+	ID   int    `json:"id"`
 }
 
-var userList = []user{
-	{Name: "John Doe", ID: "1"},
-	{Name: "Jane Doe", ID: "2"},
+var userList = []User{
+	{Name: "John Doe", ID: 1},
+	{Name: "Jane Doe", ID: 2},
 }
 
 func usersHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +68,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerUserHandler(w http.ResponseWriter, r *http.Request) {
-	var newUser user
+	var newUser User
 	json.NewDecoder(r.Body).Decode(&newUser)
 
 	if r.Method != "POST" || newUser.Name == "" {
@@ -75,18 +76,18 @@ func registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// generate random ID, add length of userList to ensure uniqueness
-	newUser.ID = strconv.Itoa(rand.Intn(1000000) + len(userList))
+	newUser.ID = rand.Intn(1000000) + len(userList)
 
 	// append user to userList
 	userList = append(userList, newUser)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{ "id": "%s" }`, newUser.ID)
+	fmt.Fprintf(w, `{ "id": "%d" }`, newUser.ID)
 }
 
 func unregisterUserHandler(w http.ResponseWriter, r *http.Request) {
-	var usr user
+	var usr User
 	json.NewDecoder(r.Body).Decode(&usr)
 
 	for i, u := range userList {
@@ -104,7 +105,14 @@ func unregisterUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveWebsocket(chat *Chat, w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	in := r.URL.Query().Get("id")
+
+	var id int
+	id, err := strconv.Atoi(in)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
 	// check if user is registered
 	for _, u := range userList {
