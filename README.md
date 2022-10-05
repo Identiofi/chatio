@@ -79,7 +79,7 @@ The endpoint should be available at `/users` and should return a list of users i
 
 ```json
 {
-    "users": [
+    [
         {
             "name": "John Doe",
             "id": 1234
