@@ -38,7 +38,7 @@ func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	// return the content type as JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{ "message": "Message received"`)
+	fmt.Fprintf(w, `{ "message": "Message received"}`)
 }
 
 // TODO - TASK 1: type user struct
