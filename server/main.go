@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -23,6 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	http.Handle("/", http.FileServer(http.FS(fsys)))
 	http.HandleFunc("/users", usersHandler)
 	http.HandleFunc("/register", registerUserHandler)
@@ -32,18 +32,12 @@ func main() {
 	})
 
 	log.Printf("Starting server on port 8080")
-	if err := http.ListenAndServe("localhost:8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("Server error:", err)
 	}
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, string(readFile("./static/index.html")))
-}
-
-type message struct {
+type Messge struct {
 	Message string `json:"message"`
 }
 
@@ -122,12 +116,4 @@ func serveWebsocket(chat *Chat, w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Error(w, `{ "message": "user not found"}`, http.StatusNotFound)
-}
-
-func readFile(path string) []byte {
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return content
 }

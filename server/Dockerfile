@@ -7,9 +7,15 @@ ADD . /app
 WORKDIR /app
 
 RUN go mod download
-RUN go get -d -v golang.org/x/net/html \
-    && CGO_ENABLED=0 go build -a -installsuffix cgo -o app .
+RUN CGO_ENABLED=0 go build -a -installsuffix cgo -o server .
 
-FROM busybox
-COPY --from=builder /app/app /app
+
+FROM busybox 
+## Copy the binary from the builder image
+COPY --from=builder /app/server /app
+## Copy the static files
+COPY --from=builder /app/static /static
+
+EXPOSE 8080
+
 CMD /app
