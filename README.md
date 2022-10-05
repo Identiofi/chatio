@@ -13,7 +13,7 @@ For more information: contact <a href="mailto:jimmy@identio.fi">Jimmy@identio.fi
 To get started, clone this repository
 
 ```
-$ git clone github.com/identiofi/chatio
+$ git clone https://github.com/Identiofi/chatio
 ```
 
 ## Prerequisits
@@ -470,7 +470,7 @@ Alright good job! You're done with part 2 of the workshop. If you want to see th
 ### Bonus, and the fun part!
 
 Now that we have a working chat server, and a working client, we can start chatting with each other! 🎉
-We have setup a public chat server, which you can connect to using the following url: `ws://chat.identio.fi`
+We have setup a public chat server, which you can connect to using the following url: `ws://chat.fly.dev/chat?id=X`
 
 **Here are some things you can try:**
 
