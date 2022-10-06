@@ -181,7 +181,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 ### Opening a websocket connection
 
 ```go
-conn, err := websocket.DefaultDialer.Dial("ws://localhost:8080/chat", nil)
+// Dial returns the connection, a http.Request and an error,
+// we can ignore the http.Request for now.
+conn, _, err := websocket.DefaultDialer.Dial("ws://localhost:8080/chat", nil)
 if err != nil {
     log.Fatal("dial:", err)
 }
